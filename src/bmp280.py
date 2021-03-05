@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 BMP280 Driver."""
+
 from i2cdevice import Device, Register, BitField, _int_to_bytes
 from i2cdevice.adapter import LookupAdapter, Adapter
 import struct
@@ -83,14 +84,14 @@ class BMP280Calibration():
         return self.temperature_fine / 5120.0
 
     def compensate_pressure(self, raw_pressure):
-        var1 = self.temperature_fine / 2.0 - 64000.0
+        var1 = (self.temperature_fine / 2.0) - 64000.0
         var2 = var1 * var1 * self.dig_p6 / 32768.0
         var2 = var2 + var1 * self.dig_p5 * 2
-        var2 = var2 / 4.0 + self.dig_p4 * 65536.0
+        var2 = (var2 / 4.0) + self.dig_p4 * 65536.0
         var1 = (self.dig_p3 * var1 * var1 / 524288.0 + self.dig_p2 * var1) / 524288.0
         var1 = (1.0 + var1 / 32768.0) * self.dig_p1
         pressure = 1048576.0 - raw_pressure
-        pressure = (pressure - var2 / 4096.0) * 6250.0 / var1
+        pressure = (pressure - (var2 / 4096.0)) * 6250.0 / var1
         var1 = self.dig_p9 * pressure * pressure / 2147483648.0
         var2 = pressure * self.dig_p8 / 32768.0
         return pressure + (var1 + var2 + self.dig_p7) / 16.0
