@@ -1,3 +1,9 @@
 smbus
 Adafruit-GPIO>=0.6.5
 Adafruit_DHT
+gpiozero
+tendo==0.2.15
+cryptography==3.4.6
+gpiozero==1.5.1
+PyJWT==2.0.1
+paho-mqtt==1.5.1
