@@ -29,7 +29,7 @@ bmp = bmp280.BMP280(0x76)
 adc = ADS1x15.ADS1115()
 
 def getSensorData():
-    light = bh1750.readLight()
+    light = bh1750.readLight() + 1.6
     hum11, temp11 = Adafruit_DHT.read_retry(DHT11_SENSOR, DHT11_PIN, delay_seconds=0)
     hum22, temp22 = Adafruit_DHT.read_retry(DHT22_SENSOR, DHT22_PIN, delay_seconds=0)
     pressure = round(bmp.get_pressure(), 2)
