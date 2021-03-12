@@ -18,7 +18,7 @@ adc = ADS1x15.ADS1115()
 print("| {0:>6} | {1:>6} | {2:>6} | {3:>6} | {4:>6} | {5:>6} | {6:>6} | {7:>6} | {8:>6} |".format("TEM11", "TEM22", "HUM11", "HUM22", "GAS", "RAIN", "LIGHT", "BMP", "BMPADJ"))
 
 while True:
-    light = bh1750.readLight() + 1.6
+    light = bh1750.readLight()
     humidity1, temperature1 = Adafruit_DHT.read_retry(DHT11_SENSOR, DHT11_PIN, delay_seconds=0)
     humidity2, temperature2 = Adafruit_DHT.read_retry(DHT22_SENSOR, DHT22_PIN, delay_seconds=0)
     pressure = round(bmp.get_pressure(), 2)

@@ -7,3 +7,4 @@ cryptography==3.4.6
 gpiozero==1.5.1
 PyJWT==2.0.1
 paho-mqtt==1.5.1
+pushbullet.py

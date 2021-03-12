@@ -9,9 +9,11 @@ from src import bh1750
 from src import ADS1x15
 from tendo import singleton
 from gpiozero import CPUTemperature
+from pushbullet import Pushbullet
 import paho.mqtt.client as mqtt
 
 me = singleton.SingleInstance() # will sys.exit(-1) if another instance of this program is already running
+pb = Pushbullet("o.2kn7vFiSmquZ4Qmk3hXOlSM4TBz1qYk1")
 
 # Constants that shouldn't need to be changed
 token_life = 60 #lifetime of the JWT token (minutes)
@@ -29,7 +31,7 @@ bmp = bmp280.BMP280(0x76)
 adc = ADS1x15.ADS1115()
 
 def getSensorData():
-    light = bh1750.readLight() + 1.6
+    light = bh1750.readLight()
     hum11, temp11 = Adafruit_DHT.read_retry(DHT11_SENSOR, DHT11_PIN, delay_seconds=0)
     hum22, temp22 = Adafruit_DHT.read_retry(DHT22_SENSOR, DHT22_PIN, delay_seconds=0)
     pressure = round(bmp.get_pressure(), 2)
@@ -91,6 +93,7 @@ def main():
     _CLIENT_ID = 'projects/{}/locations/{}/registries/{}/devices/{}'.format(project_id, gcp_location, registry_id, device_id)
     _MQTT_TOPIC = '/devices/{}/events'.format(device_id)
 	
+    pb.push_note("IoTWeather", "Device is Running")
     print ("Ready. Waiting for signal.")
     
     while True:
@@ -120,9 +123,11 @@ def main():
 
                 payload = createJSON(currentTime, temp, hum, press, light, airq, rain, in_temp, in_hum, cputemp)
                 client.publish(_MQTT_TOPIC, payload, qos=1)
-                print("{}\n".format(payload))
+                # print("{}\n".format(payload))
                 time.sleep(0.5)
             except Exception as e:
+                pb.push_note("IoTWeather - ERROR", "Connection error")
+                pb.push_note("IoTWeather - ERROR", e)
                 print("There was an error")
                 print(e)
             time.sleep(5)    
