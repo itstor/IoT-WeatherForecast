@@ -4,6 +4,8 @@ import json
 import jwt
 import time
 import Adafruit_DHT
+import urllib.request, urllib.error
+import configparser
 from src import bmp280
 from src import bh1750
 from src import ADS1x15
@@ -13,7 +15,11 @@ from pushbullet import Pushbullet
 import paho.mqtt.client as mqtt
 
 me = singleton.SingleInstance() # will sys.exit(-1) if another instance of this program is already running
-pb = Pushbullet("o.2kn7vFiSmquZ4Qmk3hXOlSM4TBz1qYk1")
+
+parser = configparser.ConfigParser()
+parser.read('/home/pi/Project/IoT-WeatherForecast/config/config.ini')
+api = parser['pushbullet']['api']
+pb = Pushbullet(api)
 
 # Constants that shouldn't need to be changed
 token_life = 60 #lifetime of the JWT token (minutes)
@@ -79,13 +85,20 @@ def createJSON(timestamp, temp, hum, press, light, airq, rain, in_temp, in_hum, 
     json_str = json.dumps(data)
     return json_str
 
+def wait_for_connection():
+    while True:
+        try:
+            check = urllib.request('8.8.8.8', timeout=1)
+        except urllib.error.URLError:
+            pass
+
 def main():
     project_id = "single-cirrus-307302"
     gcp_location = "asia-east1"
     registry_id = "raspberry"
     device_id = "raspberrypi"
-    root_cert_filepath = "../../.ssh/roots.pem"
-    ssl_private_key_filepath = "../../.ssh/ec_private.pem"
+    root_cert_filepath = "/home/pi/.ssh/roots.pem"
+    ssl_private_key_filepath = "/home/pi/.ssh/ec_private.pem"
     ssl_algorithm = "ES256"
     googleMQTTURL = "mqtt.googleapis.com"
     googleMQTTPort = 8883
@@ -124,13 +137,13 @@ def main():
                 payload = createJSON(currentTime, temp, hum, press, light, airq, rain, in_temp, in_hum, cputemp)
                 client.publish(_MQTT_TOPIC, payload, qos=1)
                 # print("{}\n".format(payload))
-                time.sleep(0.5)
+                # time.sleep(0.5)
             except Exception as e:
                 pb.push_note("IoTWeather - ERROR", "Connection error")
                 pb.push_note("IoTWeather - ERROR", e)
                 print("There was an error")
                 print(e)
-            time.sleep(5)    
+            time.sleep(20)    
         client.loop_stop()
 
 if __name__ == '__main__':
