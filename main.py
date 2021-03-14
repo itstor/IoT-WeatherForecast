@@ -23,14 +23,13 @@ pb = Pushbullet(api)
 
 # Constants that shouldn't need to be changed
 token_life = 60 #lifetime of the JWT token (minutes)
-# end of constants
-
 GAIN = 2/3
 DHT11_SENSOR = Adafruit_DHT.DHT11
 DHT11_PIN = 14
 
 DHT22_SENSOR = Adafruit_DHT.DHT22
 DHT22_PIN = 15
+# end of constants
 
 
 bmp = bmp280.BMP280(0x76)
@@ -130,7 +129,6 @@ def main():
         client.loop_start()
 
         while time.time() < jwt_refresh: # as long as the JWT isn't ready to expire, otherwise break this loop so the JWT gets refreshed
-        # Continuously monitor for heart beat signals being received
             try:
                 currentTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 temp, hum, press, light, airq, rain, in_temp, in_hum, cputemp = getSensorData()
