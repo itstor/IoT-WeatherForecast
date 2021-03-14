@@ -89,6 +89,7 @@ def wait_for_connection():
     while True:
         try:
             check = urllib.request('8.8.8.8', timeout=1)
+			return
         except urllib.error.URLError:
             pass
 
