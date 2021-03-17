@@ -91,10 +91,11 @@ def createJSON(timestamp, temp, hum, press, light, airq, rain, in_temp, in_hum, 
 def wait_for_connection():
     while True:
         try:
-            check = urllib.request('8.8.8.8', timeout=1)
-			return
-        except urllib.error.URLError:
+            check = urllib.request("8.8.8.8", timeout=1)
+            return
+        except:
             pass
+
 
 def main():
     project_id = "single-cirrus-307302"
