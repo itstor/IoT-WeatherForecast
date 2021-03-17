@@ -14,22 +14,21 @@ from gpiozero import CPUTemperature
 from pushbullet import Pushbullet
 import paho.mqtt.client as mqtt
 
-me = singleton.SingleInstance() # will sys.exit(-1) if another instance of this program is already running
+me = singleton.SingleInstance() 
 
 parser = configparser.ConfigParser()
 parser.read('/home/pi/Project/IoT-WeatherForecast/config/config.ini')
 api = parser['pushbullet']['api']
 pb = Pushbullet(api)
 
-# Constants that shouldn't need to be changed
-token_life = 60 #lifetime of the JWT token (minutes)
+token_life = 60 
 GAIN = 2/3
 DHT11_SENSOR = Adafruit_DHT.DHT11
 DHT11_PIN = 14
 
 DHT22_SENSOR = Adafruit_DHT.DHT22
 DHT22_PIN = 15
-# end of constants
+
 
 
 bmp = bmp280.BMP280(0x76)
@@ -61,7 +60,7 @@ def create_jwt(cur_time, projectID, privateKeyFilepath, algorithmType):
   with open(privateKeyFilepath, 'r') as f:
     private_key = f.read()
 
-  return jwt.encode(token, private_key, algorithm=algorithmType) # Assuming RSA, but also supports ECC
+  return jwt.encode(token, private_key, algorithm=algorithmType) 
 
 def error_str(rc):
     return '{}: {}'.format(rc, mqtt.error_string(rc))
@@ -92,13 +91,8 @@ def createJSON(timestamp, temp, hum, press, light, airq, rain, in_temp, in_hum, 
 def wait_for_connection():
     while True:
         try:
-<<<<<<< HEAD
-            urllib.request('8.8.8.8', timeout=1)
-            return
-=======
             check = urllib.request('8.8.8.8', timeout=1)
 			return
->>>>>>> 104bd7a6987f0c3bd24d6d1352563fb763495fa1
         except urllib.error.URLError:
             pass
 
@@ -123,7 +117,7 @@ def main():
 
         client = mqtt.Client(client_id=_CLIENT_ID)
         cur_time = datetime.datetime.utcnow()
-        # authorization is handled purely with JWT, no user/pass, so username can be whatever
+
         client.username_pw_set(
             username='unused',
             password=create_jwt(cur_time, project_id, ssl_private_key_filepath, ssl_algorithm))
@@ -131,14 +125,14 @@ def main():
         client.on_connect = on_connect
         client.on_publish = on_publish
 
-        client.tls_set(ca_certs=root_cert_filepath) # Replace this with 3rd party cert if that was used when creating registry
+        client.tls_set(ca_certs=root_cert_filepath) 
         client.connect(googleMQTTURL, googleMQTTPort)
 
-        jwt_refresh = time.time() + ((token_life - 1) * 60) #set a refresh time for one minute before the JWT expires
+        jwt_refresh = time.time() + ((token_life - 1) * 60) 
 
         client.loop_start()
 
-        while time.time() < jwt_refresh: # as long as the JWT isn't ready to expire, otherwise break this loop so the JWT gets refreshed
+        while time.time() < jwt_refresh: 
             try:
                 currentTime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 temp, hum, press, light, airq, rain, in_temp, in_hum, cputemp = getSensorData()
