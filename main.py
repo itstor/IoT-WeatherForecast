@@ -37,16 +37,21 @@ bmp = bmp280.BMP280(0x76)
 adc = ADS1x15.ADS1115()
 
 def getSensorData():
-    light = bh1750.readLight()
-    hum11, temp11 = Adafruit_DHT.read_retry(DHT11_SENSOR, DHT11_PIN, delay_seconds=0)
-    hum22, temp22 = Adafruit_DHT.read_retry(DHT22_SENSOR, DHT22_PIN, delay_seconds=0)
-    pressure = round(bmp.get_pressure(), 2)
-    cputemp = CPUTemperature().temperature
-    values = [0]*2
-    for i in range(2):
-        values[i] = adc.read_adc(i, gain=GAIN)
-    return round(temp22, 2), round(hum22, 2), pressure, light, values[0], values[1], temp11, hum11, cputemp
-
+    while True:
+        try:
+            light = bh1750.readLight()
+            hum11, temp11 = Adafruit_DHT.read_retry(DHT11_SENSOR, DHT11_PIN, delay_seconds=0)
+            hum22, temp22 = Adafruit_DHT.read_retry(DHT22_SENSOR, DHT22_PIN, delay_seconds=0)
+            pressure = round(bmp.get_pressure(), 2)
+            cputemp = CPUTemperature().temperature
+            values = [0]*2
+            for i in range(2):
+                values[i] = adc.read_adc(i, gain=GAIN)
+            print("Data Collected")
+            return round(temp22, 2), round(hum22, 2), pressure, light, values[0], values[1], temp11, hum11, cputemp
+        except Exception as e:
+            pb.push_note("Sensor ERROR", "{}".format(e))
+            pass
 def create_jwt(cur_time, projectID, privateKeyFilepath, algorithmType):
   token = {
       'iat': cur_time,
@@ -88,7 +93,8 @@ def createJSON(timestamp, temp, hum, press, light, airq, rain, in_temp, in_hum, 
 def wait_for_connection():
     while True:
         try:
-            check = urllib.request('8.8.8.8', timeout=1)
+            urllib.request('8.8.8.8', timeout=1)
+            return
         except urllib.error.URLError:
             pass
 
@@ -135,12 +141,13 @@ def main():
                 temp, hum, press, light, airq, rain, in_temp, in_hum, cputemp = getSensorData()
 
                 payload = createJSON(currentTime, temp, hum, press, light, airq, rain, in_temp, in_hum, cputemp)
+                # wait_for_connection()
                 client.publish(_MQTT_TOPIC, payload, qos=1)
-                # print("{}\n".format(payload))
+                print("{}\n".format(payload))
                 # time.sleep(0.5)
             except Exception as e:
                 pb.push_note("IoTWeather - ERROR", "Connection error")
-                pb.push_note("IoTWeather - ERROR", e)
+                pb.push_note("IoTWeather - ERROR", "{}".format(e))
                 print("There was an error")
                 print(e)
             time.sleep(20)    
